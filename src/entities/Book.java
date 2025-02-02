@@ -1,7 +1,9 @@
+package entities;
+
 public class Book {
-    String title , authorName , genre;
-    int publishingYear;
-    boolean finishedReading;
+    private String title , authorName , genre;
+    private Integer publishingYear;
+    private Boolean finishedReading;
 
     public Book(String title, String authorName, String genre, int publishingYear, boolean finishedReading) {
         this.title = title;
@@ -53,12 +55,12 @@ public class Book {
 
     @Override
     public String toString() {
-        return "Book{" +
-                "title='" + title + '\'' +
-                ", authorName='" + authorName + '\'' +
-                ", genre='" + genre + '\'' +
-                ", publishingYear=" + publishingYear +
-                ", finishedReading=" + finishedReading +
-                '}';
+        return "Book: " +
+                "title — '" + title + '\'' +
+                "|| Author Name — '" + authorName + '\'' +
+                "|| Genre — '" + genre + '\'' +
+                "|| Publishing Year — " + publishingYear +
+                "|| Finished Reading — " + finishedReading +
+                "\n";
     }
 }
