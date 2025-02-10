@@ -10,14 +10,13 @@ import java.util.Scanner;
 
 public class MenuManager {
     public static void mainMenu(Scanner scanner) {
+        UsersManager.loadUsersFromStorage();
+
         Integer choice = null;
         MainMenuOptions selectedOption = null;
 
         User user1 = new User("user1", "1111");
-        UsersManager.getUsersList().add(user1);
         user1.getBooks().add(new Book("The Catcher in the Rye", "JD Salinger", "novel", 1951, false));
-//        user1.getBooks().add(new Book("Harry Potter and the Goblet of Fire", "JK Rowling", "fantasy", 2000, false));
-//        user1.getBooks().add(new Book("The richest man in babylon", "George Samuel Clason", "self-help", 1926, true));
 
         do {
             try {
@@ -29,6 +28,7 @@ public class MenuManager {
                 switch (selectedOption) {
                     case MainMenuOptions.REGISTER_USER:
                         UsersManager.registerUser();
+                        UsersManager.saveUserToStorage();
                         break;
                     case MainMenuOptions.LOGIN_USER:
                         UsersManager.logInUser();
@@ -38,7 +38,7 @@ public class MenuManager {
                         UsersManager.getUsers();
                         break;
                     case MainMenuOptions.EXIT:
-                        System.out.println("Exited!");
+                        System.out.println("Exit completed!");
                         break;
                 }
             } catch (Exception e) {
@@ -179,7 +179,7 @@ public class MenuManager {
     }
 
     private static void filterBooksMessageMenu() {
-        System.out.println("\nPlease, choose what You want to sort by: ");
+        System.out.println("\nPlease, choose what You want to filter by: ");
         System.out.println("====================================================================");
         System.out.println("1) Author");
         System.out.println("2) Genre");
@@ -196,7 +196,6 @@ public class MenuManager {
 
             if (answer.equals("Y")) {
                 System.out.println("Please, choose Sort or Filter (S/F): ");
-
                 String operationChoice = scanner.nextLine();
 
                 if (operationChoice.equals("S")) {

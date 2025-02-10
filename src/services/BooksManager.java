@@ -174,8 +174,7 @@ public class BooksManager {
         User loggedUser = UsersManager.getCurrentUser();
 
         try {
-            FileOutputStream fos = new FileOutputStream("UserLibraryStorage.ser");
-            ObjectOutputStream objStr = new ObjectOutputStream(fos);
+            ObjectOutputStream objStr = new ObjectOutputStream(new FileOutputStream(loggedUser.getUsername() + "-LibraryStorage.ser"));
 
             objStr.writeObject(loggedUser.getBooks());
             objStr.close();
@@ -193,8 +192,8 @@ public class BooksManager {
         User loggedUser = UsersManager.getCurrentUser();
 
         try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("UserLibraryStorage.ser"));
-            List<Book> importedBook = (List<Book>) objectInputStream.readObject();
+            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(loggedUser.getUsername() + "-LibraryStorage.ser"));
+            LinkedList<Book> importedBook = (LinkedList<Book>) objectInputStream.readObject();
 
             for (Book book : importedBook) {
                 if (!loggedUser.getBooks().contains(book)) {
@@ -208,15 +207,15 @@ public class BooksManager {
         }
     }
 
-    private static boolean checkNewBookPropertiesValidness(String inputedTitle, int inputedYear) {
+    private static boolean checkNewBookPropertiesValidness(String inputtedTitle, int inputtedYear) {
         User loggedUser = UsersManager.getCurrentUser();
         int currentYear = Year.now().getValue();
 
         for (Book book : loggedUser.getBooks()) {
-            if (book.getTitle().equals(inputedTitle)) {
+            if (book.getTitle().equals(inputtedTitle)) {
                 System.out.println("Book with provided Title already exists.");
                 return false;
-            } else if (inputedYear >= 4 && inputedYear > currentYear) {
+            } else if (inputtedYear >= 4 && inputtedYear > currentYear) {
                 System.out.println("Invalid year.");
                 return false;
             }

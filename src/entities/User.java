@@ -1,11 +1,13 @@
 package entities;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1;
     private final String username;
     private final String password;
-    private LinkedList<Book> books = new LinkedList<>();
+    private final LinkedList<Book> books = new LinkedList<>();
 
     public User(String username, String password) {
         this.username = username;
