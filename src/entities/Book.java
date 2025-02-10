@@ -1,7 +1,13 @@
 package entities;
 
-public class Book {
-    private String title , authorName , genre;
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Book implements Serializable {
+    private static final long serialVersionUID = 1;
+    private String title;
+    private String authorName;
+    private String genre;
     private Integer publishingYear;
     private Boolean finishedReading;
 
@@ -56,11 +62,22 @@ public class Book {
     @Override
     public String toString() {
         return "Book: " +
-                "title — '" + title + '\'' +
-                "|| Author Name — '" + authorName + '\'' +
-                "|| Genre — '" + genre + '\'' +
-                "|| Publishing Year — " + publishingYear +
-                "|| Finished Reading — " + finishedReading +
-                "\n";
+                "title: '" + title + '\'' +
+                " || Author Name: '" + authorName + '\'' +
+                " || Genre: " + genre + '\'' +
+                " || Publishing Year: " + publishingYear +
+                " || Finished Reading: " + finishedReading + "\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Book book)) return false;
+        return Objects.equals(title, book.title) && Objects.equals(authorName, book.authorName) && Objects.equals(genre, book.genre) && Objects.equals(publishingYear, book.publishingYear) && Objects.equals(finishedReading, book.finishedReading);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, authorName, genre, publishingYear, finishedReading);
     }
 }

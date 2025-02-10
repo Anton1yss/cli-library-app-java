@@ -13,12 +13,12 @@ public class UsersManager {
     public static User currentUser;
     private static Boolean isUserLogged = false;
 
-    public static LinkedList<User> getUsersList () {
+    public static LinkedList<User> getUsersList() {
         return UsersManager.usersList;
     }
 
     /* Register */
-    public static void registerUser(){
+    public static void registerUser() {
         System.out.println("Input unique Username: ");
         String username = scanner.nextLine();
 
@@ -30,7 +30,7 @@ public class UsersManager {
         System.out.println("Now create a password: ");
         String password = scanner.nextLine();
 
-        while (password.length() != 4){
+        while (password.length() != 4) {
             System.out.println("Password should have 4 digits");
             System.out.println("Try again: ");
             password = scanner.nextLine();
@@ -42,7 +42,6 @@ public class UsersManager {
 
         System.out.println("Registered!");
     }
-
 
     /* Log In */
     public static void logInUser() {
@@ -58,37 +57,46 @@ public class UsersManager {
             System.out.println("The username or password is wrong.");
             UsersManager.isUserLogged = false;
         } else {
-            System.out.println("Login successful! Welcome " + username);
+            System.out.println("\nLogin successful! Welcome, " + username + "!");
             UsersManager.currentUser = user.get();
             UsersManager.isUserLogged = true;
         }
+        BooksManager.loadUserLibrary();
+    }
+
+    /* Log out User */
+    public static void logOutUser() {
+        BooksManager.saveBooksToStorage();
+        UsersManager.isUserLogged = false;
+        System.out.println("Logged Out, bye!");
     }
 
     /* Display All Users */
-    public static void getUsers(){
-        if(usersList.isEmpty()){
+    public static void getUsers() {
+        if (usersList.isEmpty()) {
             System.out.println("There`re no users.");
         } else {
             System.out.println("All the library users: ");
-            usersList.stream().forEach(user -> System.out.println("- " + user.getUsername() ));
+            usersList.stream().forEach(user -> System.out.println("- " + user.getUsername()));
         }
     }
 
-    public static User getCurrentUser(){
+    public static User getCurrentUser() {
         return currentUser;
     }
 
-    public static Boolean getUserStatus () {
+    public static Boolean getUserStatus() {
         return UsersManager.isUserLogged;
-    };
+    }
 
-    private static Optional<User> checkUserCredentials(String username, String password){
-         return usersList.stream().filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password)).findFirst();
+    private static Optional<User> checkUserCredentials(String username, String password) {
+        return usersList.stream().filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password)).findFirst();
     }
 
     private static boolean checkUsernameForDuplication(final String username) {
         return usersList.stream().anyMatch(user -> user.getUsername().equals(username));
     }
 
-    private UsersManager () {};
+    private UsersManager() {
+    }
 }
