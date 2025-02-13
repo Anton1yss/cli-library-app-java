@@ -1,11 +1,13 @@
 package services;
 
+import controllers.MenuManager;
 import entities.User;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class UsersManager {
     static private final Scanner scanner = new Scanner(System.in);
@@ -23,7 +25,7 @@ public class UsersManager {
         System.out.println("Input unique Username: ");
         String username = scanner.nextLine();
 
-        while (UsersManager.checkUsernameForDuplication(username)) {
+        while (UsersManager.checkUsernameForDuplication(username) && (username != null)) {
             System.out.println("User with this nickname already exists. Try Again: ");
             username = scanner.nextLine();
         }
@@ -40,8 +42,6 @@ public class UsersManager {
         User user = new User(username, password);
 
         usersList.add(user);
-
-        createUsersLibraryFileIfMissing(username);
 
         System.out.println("Registered!");
     }
@@ -63,18 +63,14 @@ public class UsersManager {
             System.out.println("\nLogin successful! Welcome, " + username + "!");
             UsersManager.currentUser = user.get();
             UsersManager.isUserLogged = true;
-
-            createUsersLibraryFileIfMissing(username);
-
-            BooksManager.loadUserLibrary();
         }
     }
 
     /* Log out User */
     public static void logOutUser() {
-        BooksManager.saveBooksToStorage();
         UsersManager.currentUser = null;
         UsersManager.isUserLogged = false;
+        MenuManager.mainMenu(scanner);
         System.out.println("Logged Out, bye!");
     }
 
@@ -87,6 +83,29 @@ public class UsersManager {
             usersList.stream().forEach(user -> System.out.println("- " + user.getUsername()));
         }
     }
+
+//    private static String GenerateUserID() {
+//        LinkedList<String> userIDsList = new LinkedList<>();
+//
+//        File usersStorageFile = new File("UsersStorage.ser");
+//
+//        if(usersStorageFile.exists()){
+//            try {
+//                ObjectInputStream objectInputStream = new ObjectInputStream( new FileInputStream(usersStorageFile));
+//                userIDsList = (LinkedList<String>) objectInputStream.readObject();
+//            } catch (Exception c){
+//                System.out.println(c);
+//            }
+//        }
+//
+//        String userID;
+//
+//        do {
+//            userID = UUID.randomUUID().toString();
+//        } while (userIDsList.contains(userID));
+//
+//        return userID;
+//    }
 
     public static User getCurrentUser() {
         return currentUser;
@@ -109,7 +128,7 @@ public class UsersManager {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("UsersStorage.ser"));
 
             objectOutputStream.writeObject(UsersManager.getUsersList());
-            System.out.println("User added to storage!");
+//            System.out.println("User added to storage!");
             objectOutputStream.close();
 
         } catch (IOException e) {
@@ -117,6 +136,31 @@ public class UsersManager {
             System.out.println("Error, user hasn`t been added to storage.");
         }
     }
+
+//    public static void saveBookChangesToUserLibrary(){
+//        User loggedUser = UsersManager.getCurrentUser();
+//
+//        try {
+//            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("UsersStorage.ser"));
+//            LinkedList<User> usersFromStorage = (LinkedList<User>) objectInputStream.readObject();
+//
+//            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("UsersStorage.ser"));
+//
+//            for(User user : usersFromStorage){
+//                if(loggedUser.equals(user)){
+//                }
+//            }
+//
+//            System.out.println("User added to storage!");
+//            objectOutputStream.close();
+//
+//        } catch (IOException e) {
+//            System.out.println(e);
+//            System.out.println("Error, user hasn`t been added to storage.");
+//        } catch (Exception c){
+//            System.out.println(c);
+//        }
+//    }
 
     public static void loadUsersFromStorage() {
         try {
@@ -128,24 +172,14 @@ public class UsersManager {
                 UsersManager.getUsersList().add(user);
             }
 
+
+
         } catch (IOException e) {
             System.out.println(e);
-            System.out.println("loadUsersFromStorage IOException error");
+            System.out.println("loadUsersFromStorage — IOException error.");
         } catch (Exception e) {
             System.out.println(e);
-            System.out.println("loadUsersFromStorage Exception error");
-        }
-    }
-
-    private static void createUsersLibraryFileIfMissing(String username) {
-        File userLibraryStorageFile = new File(username + "-LibraryStorage.ser");
-        if (!userLibraryStorageFile.exists() && !userLibraryStorageFile.isDirectory()) {
-            try {
-                userLibraryStorageFile.createNewFile();
-            } catch (IOException e) {
-                System.out.println(e);
-                System.out.println("Error, cannot create the Library Storage file for user.");
-            }
+            System.out.println("loadUsersFromStorage — Exception error.");
         }
     }
 

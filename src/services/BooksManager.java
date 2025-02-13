@@ -1,7 +1,9 @@
 package services;
 
+import controllers.BookEditMenu;
 import controllers.BookFilteringMenu;
 import controllers.BookSortingOptions;
+import controllers.MenuManager;
 import entities.Book;
 import entities.User;
 import exceptions.NotExistenceChoice;
@@ -16,8 +18,9 @@ public class BooksManager {
 
     /* Add a Book to User`s Library */
     public static Book addBook() {
-        System.out.println("Input title of the book: ");
+        User currentUser = UsersManager.getCurrentUser();
 
+        System.out.println("Input title of the book: ");
         String title = scanner.nextLine();
 
         System.out.println("Input Author Name of the book: ");
@@ -28,15 +31,26 @@ public class BooksManager {
 
         System.out.println("Input Publishing Year of the book: ");
         int publishingYear = scanner.nextInt();
-
-        System.out.println("Have you already read the book?(True/False)");
-        boolean finishedReading = scanner.nextBoolean();
-
         scanner.nextLine();
 
+        boolean finishedReading;
+        System.out.println("Have you read the book?(Y/N)");
+        String isFinishedReading = scanner.nextLine();
+
+        if(isFinishedReading.equals("Y")){
+            finishedReading = true;
+        } else if(isFinishedReading.equals("N")) {
+            finishedReading = false;
+        } else {
+            System.out.println("Invalid Option! On book state");
+            return null;
+        }
+
         if (!checkNewBookPropertiesValidness(title, publishingYear)) return null;
-        saveBooksToStorage();
-        return new Book(title, authorName, genre, publishingYear, finishedReading);
+        Book newBook = new Book(title, authorName, genre, publishingYear, finishedReading);
+        currentUser.getBooks().add(newBook);
+        System.out.println("Book added!");
+        return newBook;
     }
 
     /* View list of User`s Books */
@@ -153,60 +167,76 @@ public class BooksManager {
             System.out.println(e);
         }
 
-        saveBooksToStorage();
+        UsersManager.saveUserToStorage();
     }
 
     /* Search Book by Title */
     public static void searchBook() {
         User loggedUser = UsersManager.getCurrentUser();
 
-        System.out.println("Please, enter title of the Book You want to search: ");
+        if(!loggedUser.getBooks().isEmpty()){
+            System.out.println("Please, enter title of the Book You want to search: ");
+            String bookToSearch = scanner.nextLine();
 
-        String bookToSearch = scanner.nextLine();
+    //        List<Book> foundBooks = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).toList();
+    //        foundBooks.stream().forEach(System.out::println);
 
-        List<Book> foundBooks = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).toList();
+            Book bookSearchResult = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).findFirst().get();
+            System.out.println(bookSearchResult);
 
-        foundBooks.stream().forEach(System.out::println);
-    }
-
-    /* Save User`s library to Storage File */
-    public static void saveBooksToStorage() {
-        User loggedUser = UsersManager.getCurrentUser();
-
-        try {
-            ObjectOutputStream objStr = new ObjectOutputStream(new FileOutputStream(loggedUser.getUsername() + "-LibraryStorage.ser"));
-
-            objStr.writeObject(loggedUser.getBooks());
-            objStr.close();
-
-            System.out.println("Library`s state saved!");
-
-        } catch (IOException e) {
-            System.out.println(e);
-            System.out.println("Error, Library saving failed.");
+        } else {
+            System.out.println("You don`t have any books in your library.");
         }
     }
 
-    /* Load User`s Library */
-    public static void loadUserLibrary() {
-        User loggedUser = UsersManager.getCurrentUser();
+    /* Edit Book */
+    public static void editBook(BookEditMenu bookEditMenu, Book bookToEdit){
+        Scanner scanner = new Scanner(System.in);
 
-        try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(loggedUser.getUsername() + "-LibraryStorage.ser"));
-            LinkedList<Book> importedBook = (LinkedList<Book>) objectInputStream.readObject();
+        switch (bookEditMenu){
+            case BookEditMenu.EDIT_TITLE:
+                System.out.println("Please, enter the New title for the Book: ");
+                String newBookTitle = scanner.nextLine();
+                bookToEdit.setTitle(newBookTitle);
+                UsersManager.saveUserToStorage();
+                break;
+            case BookEditMenu.EDIT_AUTHOR:
+                System.out.println("Please, enter the New Author Name for the Book: ");
+                String newBookAuthorName = scanner.nextLine();
+                bookToEdit.setAuthorName(newBookAuthorName);
+                UsersManager.saveUserToStorage();
+                break;
+            case BookEditMenu.EDIT_GENRE:
+                System.out.println("Please, enter the New Genre for the Book: ");
+                String newBookGenre = scanner.nextLine();
+                bookToEdit.setGenre(newBookGenre);
+                UsersManager.saveUserToStorage();
+                break;
+            case BookEditMenu.EDIT_PUBLISHING_YEAR:
+                System.out.println("Please, enter the New Publishing Year for the Book: ");
+                int newBookYear = scanner.nextInt();
+                bookToEdit.setYear(newBookYear);
+                UsersManager.saveUserToStorage();
+                break;
+            case BookEditMenu.EDIT_READ_STATE:
+                System.out.println("Have you read this book? (Y/N): ");
+                String newBookReadState = scanner.nextLine();
 
-            for (Book book : importedBook) {
-                if (!loggedUser.getBooks().contains(book)) {
-                    loggedUser.getBooks().add(book);
+                if(newBookReadState.equalsIgnoreCase("Y")){
+                    bookToEdit.setFinishedReading(true);
+                } else if(newBookReadState.equalsIgnoreCase("N")) {
+                    bookToEdit.setFinishedReading(false);
+                } else {
+                    System.out.println("Invalid Option!");
                 }
-            }
-            System.out.println("User`s Library loaded!");
-
-        } catch (Exception e) {
-            System.out.println(e);
+                UsersManager.saveUserToStorage();
+                break;
+            case GO_BACK:
+                break;
         }
     }
 
+    /* Checking the properties of the Book being added */
     private static boolean checkNewBookPropertiesValidness(String inputtedTitle, int inputtedYear) {
         User loggedUser = UsersManager.getCurrentUser();
         int currentYear = Year.now().getValue();

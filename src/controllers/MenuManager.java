@@ -6,17 +6,14 @@ import exceptions.NotExistenceChoice;
 import services.BooksManager;
 import services.UsersManager;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 public class MenuManager {
     public static void mainMenu(Scanner scanner) {
-        UsersManager.loadUsersFromStorage();
 
         Integer choice = null;
         MainMenuOptions selectedOption = null;
-
-        User user1 = new User("user1", "1111");
-        user1.getBooks().add(new Book("The Catcher in the Rye", "JD Salinger", "novel", 1951, false));
 
         do {
             try {
@@ -48,7 +45,6 @@ public class MenuManager {
     }
 
     private static void accountMenu(Scanner scanner) {
-        User loggedUser = UsersManager.getCurrentUser();
         Integer choice = null;
         AccountMenuOptions selectedOption = null;
 
@@ -61,7 +57,7 @@ public class MenuManager {
                 switch (selectedOption) {
                     case AccountMenuOptions.ADD_BOOK:
                         Book book = BooksManager.addBook();
-                        if (book != null) loggedUser.getBooks().add(book);
+                        UsersManager.saveUserToStorage();
                         break;
                     case AccountMenuOptions.VIEW_ALL_BOOK:
                         BooksManager.viewAllBooks();
@@ -73,6 +69,9 @@ public class MenuManager {
                         break;
                     case AccountMenuOptions.SEARCH_BOOK:
                         BooksManager.searchBook();
+                        break;
+                    case AccountMenuOptions.EDIT_BOOK:
+                        editBookMenu(scanner);
                         break;
                     case AccountMenuOptions.LOG_OUT:
                         UsersManager.logOutUser();
@@ -118,7 +117,7 @@ public class MenuManager {
         } while (selectedOption != BookSortingMenuOptions.GO_BACK);
     }
 
-    private static void filterBooks(Scanner scanner) {
+    private static void filterBooksMenu(Scanner scanner) {
         Integer choice = null;
         BookFilteringMenu selectedOption = null;
 
@@ -149,18 +148,71 @@ public class MenuManager {
         } while (selectedOption != BookFilteringMenu.GO_BACK);
     }
 
+    public static void editBookMenu(Scanner scanner) {
+        User loggedUser = UsersManager.getCurrentUser();
+
+        Integer choice = null;
+        BookEditMenu selectedOption = null;
+
+        if(!loggedUser.getBooks().isEmpty()) {
+            System.out.println("Please, enter title of the Book You want to search: ");
+            scanner.nextLine();
+            String bookToSearch = scanner.nextLine();
+
+            Optional <Book> optionalBook = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).findFirst();
+
+            if(optionalBook.isPresent()) {
+                Book bookToEdit = optionalBook.get();
+
+                do {
+                    try {
+                        editBooksMessageMenu();
+                        choice = scanner.nextInt();
+                        selectedOption = BookEditMenu.valueOf(choice);
+
+                        switch (selectedOption) {
+                            case EDIT_TITLE:
+                                BooksManager.editBook(BookEditMenu.EDIT_TITLE, bookToEdit);
+                                break;
+                            case EDIT_AUTHOR:
+                                BooksManager.editBook(BookEditMenu.EDIT_AUTHOR, bookToEdit);
+                                break;
+                            case EDIT_GENRE:
+                                BooksManager.editBook(BookEditMenu.EDIT_GENRE, bookToEdit);
+                                break;
+                            case EDIT_PUBLISHING_YEAR:
+                                BooksManager.editBook(BookEditMenu.EDIT_PUBLISHING_YEAR, bookToEdit);
+                                break;
+                            case EDIT_READ_STATE:
+                                BooksManager.editBook(BookEditMenu.EDIT_READ_STATE, bookToEdit);
+                                break;
+                            case GO_BACK:
+                                BooksManager.editBook(BookEditMenu.GO_BACK, bookToEdit);
+                                break;
+                        }
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                } while (selectedOption != BookEditMenu.GO_BACK);
+            }
+        } else {
+            System.out.println("Your library is Empty.");
+        }
+    }
+
     private static void welcomeMessageAccountMenu() {
-        System.out.println("Account Menu || Please, choose the operation You want to do: ");
+        System.out.println("Account Menu || Please, choose the operation do You want to do: ");
         System.out.println("====================================================================");
         System.out.println("1) Add Book");
         System.out.println("2) View all Books");
         System.out.println("3) Delete Book");
         System.out.println("4) Search Book");
-        System.out.println("5) Log Out");
+        System.out.println("5) Edit Book");
+        System.out.println("6) Log Out");
     }
 
     private static void welcomeMessageMainMenu() {
-        System.out.println("\nMain Menu || Please, choose the operation You want to do: ");
+        System.out.println("\nMain Menu || Please, choose the operation do You want to do: ");
         System.out.println("====================================================================");
         System.out.println("1) Register");
         System.out.println("2) Log In");
@@ -179,7 +231,7 @@ public class MenuManager {
     }
 
     private static void filterBooksMessageMenu() {
-        System.out.println("\nPlease, choose what You want to filter by: ");
+        System.out.println("\nPlease, choose what do You want to filter by: ");
         System.out.println("====================================================================");
         System.out.println("1) Author");
         System.out.println("2) Genre");
@@ -187,21 +239,32 @@ public class MenuManager {
         System.out.println("4) Go Back");
     }
 
+    public static void editBooksMessageMenu() {
+        System.out.println("\nPlease, choose what do You want to edit to: ");
+        System.out.println("====================================================================");
+        System.out.println("1) Edit Title");
+        System.out.println("2) Edit Author");
+        System.out.println("3) Edit Genre");
+        System.out.println("4) Edit Publishing Year");
+        System.out.println("5) Edit Read State");
+        System.out.println("6) Go Back");
+    }
+
     private static void sortOrFilterMessageMenu(Scanner scanner) {
         User loggedUser = UsersManager.getCurrentUser();
 
         if (!loggedUser.getBooks().isEmpty()) {
             System.out.println("Do you want to Sort or Filter you books? (Y/N):");
-            String answer = scanner.nextLine();
+            String answer = scanner.nextLine().trim();
 
-            if (answer.equals("Y")) {
+            if (answer.equalsIgnoreCase("Y")) {
                 System.out.println("Please, choose Sort or Filter (S/F): ");
-                String operationChoice = scanner.nextLine();
+                String operationChoice = scanner.nextLine().trim();
 
-                if (operationChoice.equals("S")) {
+                if (operationChoice.equalsIgnoreCase("S")) {
                     sortingBookMenu(scanner);
                 } else if (operationChoice.equals("F")) {
-                    filterBooks(scanner);
+                    filterBooksMenu(scanner);
                 } else {
                     throw new NotExistenceChoice(operationChoice);
                 }
@@ -210,6 +273,8 @@ public class MenuManager {
             } else {
                 throw new NotExistenceChoice(answer);
             }
+        } else {
+            System.out.println("You don`t have any books in your library.");
         }
     }
 
