@@ -84,29 +84,6 @@ public class UsersManager {
         }
     }
 
-//    private static String GenerateUserID() {
-//        LinkedList<String> userIDsList = new LinkedList<>();
-//
-//        File usersStorageFile = new File("UsersStorage.ser");
-//
-//        if(usersStorageFile.exists()){
-//            try {
-//                ObjectInputStream objectInputStream = new ObjectInputStream( new FileInputStream(usersStorageFile));
-//                userIDsList = (LinkedList<String>) objectInputStream.readObject();
-//            } catch (Exception c){
-//                System.out.println(c);
-//            }
-//        }
-//
-//        String userID;
-//
-//        do {
-//            userID = UUID.randomUUID().toString();
-//        } while (userIDsList.contains(userID));
-//
-//        return userID;
-//    }
-
     public static User getCurrentUser() {
         return currentUser;
     }
@@ -128,7 +105,6 @@ public class UsersManager {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("UsersStorage.ser"));
 
             objectOutputStream.writeObject(UsersManager.getUsersList());
-//            System.out.println("User added to storage!");
             objectOutputStream.close();
 
         } catch (IOException e) {
@@ -137,42 +113,13 @@ public class UsersManager {
         }
     }
 
-//    public static void saveBookChangesToUserLibrary(){
-//        User loggedUser = UsersManager.getCurrentUser();
-//
-//        try {
-//            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("UsersStorage.ser"));
-//            LinkedList<User> usersFromStorage = (LinkedList<User>) objectInputStream.readObject();
-//
-//            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("UsersStorage.ser"));
-//
-//            for(User user : usersFromStorage){
-//                if(loggedUser.equals(user)){
-//                }
-//            }
-//
-//            System.out.println("User added to storage!");
-//            objectOutputStream.close();
-//
-//        } catch (IOException e) {
-//            System.out.println(e);
-//            System.out.println("Error, user hasn`t been added to storage.");
-//        } catch (Exception c){
-//            System.out.println(c);
-//        }
-//    }
-
     public static void loadUsersFromStorage() {
         try {
             ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("UsersStorage.ser"));
 
             LinkedList<User> usersFromStorage = (LinkedList<User>) objectInputStream.readObject();
 
-            for (User user : usersFromStorage) {
-                UsersManager.getUsersList().add(user);
-            }
-
-
+            UsersManager.getUsersList().addAll(usersFromStorage.stream().toList());
 
         } catch (IOException e) {
             System.out.println(e);

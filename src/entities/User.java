@@ -5,13 +5,11 @@ import java.util.*;
 
 public class User implements Serializable {
     private static final long serialVersionUID = 1;
-//    private String userID;
     private final String username;
     private final String password;
     private final LinkedList<Book> books = new LinkedList<>();
 
     public User(String username, String password) {
-//        this.userID = userID;
         this.username = username;
         this.password = password;
     }
@@ -29,10 +27,6 @@ public class User implements Serializable {
         return Objects.hash(username, password, books);
     }
 
-//    public String getUserID() {
-//        return userID;
-//    }
-
     public String getUsername() {
         return username;
     }
@@ -47,8 +41,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return  /*"userID='" + userID + '\'' +*/
-                ", username='" + username + '\'' +
+        return ", username='" + username + '\'' +
                 '}';
     }
 }

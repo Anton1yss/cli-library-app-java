@@ -3,7 +3,6 @@ package services;
 import controllers.BookEditMenu;
 import controllers.BookFilteringMenu;
 import controllers.BookSortingOptions;
-import controllers.MenuManager;
 import entities.Book;
 import entities.User;
 import exceptions.NotExistenceChoice;
@@ -177,9 +176,6 @@ public class BooksManager {
         if(!loggedUser.getBooks().isEmpty()){
             System.out.println("Please, enter title of the Book You want to search: ");
             String bookToSearch = scanner.nextLine();
-
-    //        List<Book> foundBooks = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).toList();
-    //        foundBooks.stream().forEach(System.out::println);
 
             Book bookSearchResult = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).findFirst().get();
             System.out.println(bookSearchResult);
