@@ -1,39 +1,41 @@
 package services;
 
-import controllers.BookEditMenu;
-import controllers.BookFilteringMenu;
-import controllers.BookSortingOptions;
+import constants.AddBookQuestionsConstants;
+import enums.BookEditMenuOptions;
+import enums.BookFilteringMenu;
+import enums.BookSortingOptions;
 import entities.Book;
 import entities.User;
-import exceptions.NotExistenceChoice;
 
-import java.io.*;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BooksManager {
-    private static final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
+    UsersManager usersManager = new UsersManager();
 
     /* Add a Book to User`s Library */
-    public static Book addBook() {
-        User currentUser = UsersManager.getCurrentUser();
+    public Book addBook() {
+        User currentUser = usersManager.getCurrentUser();
 
-        System.out.println("Input title of the book: ");
+        System.out.println(AddBookQuestionsConstants.INPUT_BOOK_TITLE);
         String title = scanner.nextLine();
-
-        System.out.println("Input Author Name of the book: ");
+        if(!isTitleUnique(title)) return null;
+        
+        System.out.println(AddBookQuestionsConstants.INPUT_BOOK_AUTHOR_NAME);
         String authorName = scanner.nextLine();
 
-        System.out.println("Input genre of the book: ");
+        System.out.println(AddBookQuestionsConstants.INPUT_BOOK_GENRE);
         String genre = scanner.nextLine();
 
-        System.out.println("Input Publishing Year of the book: ");
+        System.out.println(AddBookQuestionsConstants.INPUT_BOOK_PUBLISHING_YEAR);
         int publishingYear = scanner.nextInt();
+        if(!isPublishingYearValid(publishingYear)) return null;
         scanner.nextLine();
 
         boolean finishedReading;
-        System.out.println("Have you read the book?(Y/N)");
+        System.out.println(AddBookQuestionsConstants.INPUT_BOOK_STATE);
         String isFinishedReading = scanner.nextLine();
 
         if(isFinishedReading.equals("Y")){
@@ -45,7 +47,6 @@ public class BooksManager {
             return null;
         }
 
-        if (!checkNewBookPropertiesValidness(title, publishingYear)) return null;
         Book newBook = new Book(title, authorName, genre, publishingYear, finishedReading);
         currentUser.getBooks().add(newBook);
         System.out.println("Book added!");
@@ -53,55 +54,51 @@ public class BooksManager {
     }
 
     /* View list of User`s Books */
-    public static void viewAllBooks() {
-        User loggedUser = UsersManager.getCurrentUser();
+    public void viewAllBooks() {
+        User loggedUser = usersManager.getCurrentUser();
 
         if (loggedUser.getBooks().isEmpty()) {
             System.out.println("There are no books in your Library.");
         } else {
-            for (Book book : loggedUser.getBooks()) {
-                System.out.println(book);
-            }
+            loggedUser.getBooks().forEach(System.out::println);
         }
     }
 
     /* View sorted list of User`s Books */
-    public static void sortBooks(BookSortingOptions sortingOptions) {
-        User loggedUser = UsersManager.getCurrentUser();
+    public void sortBooks(BookSortingOptions sortingOptions) {
+        User loggedUser = usersManager.getCurrentUser();
 
         switch (sortingOptions) {
             case BY_TITLE_ASC:
-                Comparator<Book> bookComparatorByTitleASC = (book1, book2) -> book1.getTitle().compareTo(book2.getTitle());
-                loggedUser.getBooks().sort(Comparator.comparing(Book::getTitle).thenComparing(bookComparatorByTitleASC));
+                loggedUser.getBooks().sort(Comparator.comparing(Book::getTitle));
                 String compareByTitleASCOutput = loggedUser.getBooks().stream().map(Book::toString).collect(Collectors.joining("\n"));
                 System.out.println(compareByTitleASCOutput);
                 break;
             case BY_TITLE_DESC:
-                Comparator<Book> bookComparatorByTitleDESC = (book1, book2) -> book2.getTitle().compareTo(book1.getTitle());
-                loggedUser.getBooks().sort(Comparator.comparing(Book::getTitle).thenComparing(bookComparatorByTitleDESC).reversed());
+                loggedUser.getBooks().sort(Comparator.comparing(Book::getTitle).reversed());
                 String compareByTitleDESCOutput = loggedUser.getBooks().stream().map(Book::toString).collect(Collectors.joining("\n"));
                 System.out.println(compareByTitleDESCOutput);
                 break;
             case BY_PUBLISHED_YEAR_ASC:
-                Comparator<Book> bookComparatorByYearASC = (year1, year2) -> Integer.compare(year1.getYear(), year2.getYear());
-                loggedUser.getBooks().sort(Comparator.comparing(Book::getYear).thenComparing(bookComparatorByYearASC));
+                loggedUser.getBooks().sort(Comparator.comparing(Book::getYear));
                 String compareByYearASCOutput = loggedUser.getBooks().stream().map(Book::toString).collect(Collectors.joining("\n"));
                 System.out.println(compareByYearASCOutput);
                 break;
             case BY_PUBLISHED_YEAR_DESC:
-                Comparator<Book> bookComparatorByYearDESC = (year1, year2) -> Integer.compare(year2.getYear(), year1.getYear());
-                loggedUser.getBooks().sort(Comparator.comparing(Book::getYear).thenComparing(bookComparatorByYearDESC).reversed());
+                loggedUser.getBooks().sort(Comparator.comparing(Book::getYear).reversed());
                 String compareByYearDESCOutput = loggedUser.getBooks().stream().map(Book::toString).collect(Collectors.joining("\n"));
                 System.out.println(compareByYearDESCOutput);
                 break;
             case GO_BACK:
                 break;
+            default:
+                System.out.println("Invalid Option!");
         }
     }
 
     /* View filtered list of User`s Books */
-    public static void filterBooks(BookFilteringMenu bookFilteringMenu) {
-        User loggedUser = UsersManager.getCurrentUser();
+    public void filterBooks(BookFilteringMenu bookFilteringMenu) {
+        User loggedUser = usersManager.getCurrentUser();
 
         switch (bookFilteringMenu) {
             case BookFilteringMenu.BY_AUTHOR:
@@ -141,37 +138,30 @@ public class BooksManager {
                 System.out.println(isFinishedReading);
             case BookFilteringMenu.GO_BACK:
                 break;
+            default:
+                System.out.println("Invalid Option!");
         }
     }
 
     /* Delete a Book */
-    public static void deleteBook() {
-        User loggedUser = UsersManager.getCurrentUser();
+    public void deleteBook() {
+        User loggedUser = usersManager.getCurrentUser();
 
         System.out.println("Please, enter title of the Book You want to delete: ");
-
         String bookToRemove = scanner.nextLine();
 
-        try {
-            for (Book book : loggedUser.getBooks()) {
-                if (book.getTitle().equals(bookToRemove)) {
-                    loggedUser.getBooks().remove(book);
-                    System.out.println("Book removed!");
-                    break;
-                } else {
-                    System.out.println("There`s no book with this Title.");
-                }
-            }
-        } catch (NotExistenceChoice e) {
-            System.out.println(e);
-        }
+        boolean bookRemoved = loggedUser.getBooks().removeIf(book -> book.getTitle().equals(bookToRemove));
 
-        UsersManager.saveUserToStorage();
+        if(bookRemoved){
+            System.out.println("Book removed!");
+        } else {
+            System.out.println("There`s no book with this title.");
+        }
     }
 
     /* Search Book by Title */
-    public static void searchBook() {
-        User loggedUser = UsersManager.getCurrentUser();
+    public void searchBook() {
+        User loggedUser = usersManager.getCurrentUser();
 
         if(!loggedUser.getBooks().isEmpty()){
             System.out.println("Please, enter title of the Book You want to search: ");
@@ -181,40 +171,40 @@ public class BooksManager {
             System.out.println(bookSearchResult);
 
         } else {
-            System.out.println("You don`t have any books in your library.");
+            System.out.println("There`s no book with this title.");
         }
     }
 
     /* Edit Book */
-    public static void editBook(BookEditMenu bookEditMenu, Book bookToEdit){
+    public void editBook(BookEditMenuOptions bookEditMenuOptions, Book bookToEdit){
         Scanner scanner = new Scanner(System.in);
 
-        switch (bookEditMenu){
-            case BookEditMenu.EDIT_TITLE:
+        switch (bookEditMenuOptions){
+            case BookEditMenuOptions.EDIT_TITLE:
                 System.out.println("Please, enter the New title for the Book: ");
                 String newBookTitle = scanner.nextLine();
-                bookToEdit.setTitle(newBookTitle);
-                UsersManager.saveUserToStorage();
+                if(!isTitleUnique(newBookTitle)) bookToEdit.setTitle(newBookTitle);
+                usersManager.saveUsersToStorage();
                 break;
-            case BookEditMenu.EDIT_AUTHOR:
+            case BookEditMenuOptions.EDIT_AUTHOR:
                 System.out.println("Please, enter the New Author Name for the Book: ");
                 String newBookAuthorName = scanner.nextLine();
                 bookToEdit.setAuthorName(newBookAuthorName);
-                UsersManager.saveUserToStorage();
+                usersManager.saveUsersToStorage();
                 break;
-            case BookEditMenu.EDIT_GENRE:
+            case BookEditMenuOptions.EDIT_GENRE:
                 System.out.println("Please, enter the New Genre for the Book: ");
                 String newBookGenre = scanner.nextLine();
                 bookToEdit.setGenre(newBookGenre);
-                UsersManager.saveUserToStorage();
+                usersManager.saveUsersToStorage();
                 break;
-            case BookEditMenu.EDIT_PUBLISHING_YEAR:
+            case BookEditMenuOptions.EDIT_PUBLISHING_YEAR:
                 System.out.println("Please, enter the New Publishing Year for the Book: ");
                 int newBookYear = scanner.nextInt();
-                bookToEdit.setYear(newBookYear);
-                UsersManager.saveUserToStorage();
+                if(!isPublishingYearValid(newBookYear)) bookToEdit.setYear(newBookYear);
+                usersManager.saveUsersToStorage();
                 break;
-            case BookEditMenu.EDIT_READ_STATE:
+            case BookEditMenuOptions.EDIT_READ_STATE:
                 System.out.println("Have you read this book? (Y/N): ");
                 String newBookReadState = scanner.nextLine();
 
@@ -225,30 +215,59 @@ public class BooksManager {
                 } else {
                     System.out.println("Invalid Option!");
                 }
-                UsersManager.saveUserToStorage();
+                usersManager.saveUsersToStorage();
                 break;
             case GO_BACK:
                 break;
         }
     }
 
-    /* Checking the properties of the Book being added */
-    private static boolean checkNewBookPropertiesValidness(String inputtedTitle, int inputtedYear) {
-        User loggedUser = UsersManager.getCurrentUser();
-        int currentYear = Year.now().getValue();
-
+    /* Checking the title uniqueness of the Book being added */
+    private boolean isTitleUnique(String inputtedTitle) {
+        User loggedUser = usersManager.getCurrentUser();
         for (Book book : loggedUser.getBooks()) {
             if (book.getTitle().equals(inputtedTitle)) {
-                System.out.println("Book with provided Title already exists.");
+                System.out.println("Book with provided Title already exists. Try again.");
                 return false;
-            } else if (inputtedYear >= 4 && inputtedYear > currentYear) {
-                System.out.println("Invalid year.");
-                return false;
+            } else if (book.getTitle().length() > 64) {
+                System.out.println("The title is too long. Try again.");
             }
         }
         return true;
     }
 
-    private BooksManager() {
+    /* Checking the publishing year validness of the Book being added */
+    private boolean isPublishingYearValid(int inputtedYear) {
+        int currentYear = Year.now().getValue();
+        if (inputtedYear < 4 || inputtedYear > currentYear) {
+            System.out.println("Invalid year! Try again.");
+            return false;
+        }
+        return true;
+    }
+
+    /* Search Book by Title */
+    public Book searchBookByTitle(){
+        User loggedUser = usersManager.getCurrentUser();
+
+        if(!loggedUser.getBooks().isEmpty()){
+            System.out.println("Please, enter title of the Book You want to search: ");
+            String bookToSearch = scanner.nextLine();
+
+            Book optionalBook = loggedUser.getBooks().stream().filter(book -> book.getTitle().equals(bookToSearch)).findFirst().orElse(null);
+
+            if(optionalBook != null){
+                return optionalBook;
+            } else {
+                System.out.println("There`s no book with this title.");
+                return null;
+            }
+        } else {
+            System.out.println("Your library is empty, so you cannot edit the book.");
+            return null;
+        }
+    }
+
+    public BooksManager() {
     }
 }

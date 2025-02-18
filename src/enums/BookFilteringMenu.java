@@ -1,4 +1,4 @@
-package controllers;
+package enums;
 
 import exceptions.NotExistenceChoice;
 

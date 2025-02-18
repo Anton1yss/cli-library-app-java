@@ -3,11 +3,9 @@ package services;
 import controllers.MenuManager;
 import entities.User;
 
-import java.io.*;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.UUID;
 
 public class UsersManager {
     static private final Scanner scanner = new Scanner(System.in);
@@ -21,11 +19,11 @@ public class UsersManager {
     }
 
     /* Register */
-    public static void registerUser() {
+    public void registerUser() {
         System.out.println("Input unique Username: ");
         String username = scanner.nextLine();
 
-        while (UsersManager.checkUsernameForDuplication(username) && (username != null)) {
+        while (checkUsernameForDuplication(username) && (username != null)) {
             System.out.println("User with this nickname already exists. Try Again: ");
             username = scanner.nextLine();
         }
@@ -47,7 +45,7 @@ public class UsersManager {
     }
 
     /* Log In */
-    public static void logInUser() {
+    public void logInUser() {
         System.out.println("Please, enter your username: ");
         String username = scanner.nextLine();
 
@@ -67,15 +65,25 @@ public class UsersManager {
     }
 
     /* Log out User */
-    public static void logOutUser() {
+    public void logOutUser() {
         UsersManager.currentUser = null;
         UsersManager.isUserLogged = false;
-        MenuManager.mainMenu(scanner);
-        System.out.println("Logged Out, bye!");
+//        MenuManager.mainMenu();
+        System.out.println("Logged Out!");
+    }
+
+    /* Save Users to Storage */
+    public void saveUsersToStorage() {
+        StoringUsersManager.saveUserToStorage();
+    }
+
+    /* Load Users from Storage */
+    public void loadUsersFromStorage() {
+        LoadingUsersManager.loadUsersFromStorage();
     }
 
     /* Display All Users */
-    public static void getUsers() {
+    public void getUsers() {
         if (usersList.isEmpty()) {
             System.out.println("There`re no users.");
         } else {
@@ -84,52 +92,22 @@ public class UsersManager {
         }
     }
 
-    public static User getCurrentUser() {
+    public User getCurrentUser() {
         return currentUser;
     }
 
-    public static Boolean getUserStatus() {
+    public Boolean getUserStatus() {
         return UsersManager.isUserLogged;
     }
 
-    private static Optional<User> checkUserCredentials(String username, String password) {
+    private Optional<User> checkUserCredentials(String username, String password) {
         return usersList.stream().filter(user -> user.getUsername().equals(username) && user.getPassword().equals(password)).findFirst();
     }
 
-    private static boolean checkUsernameForDuplication(final String username) {
+    private boolean checkUsernameForDuplication(final String username) {
         return usersList.stream().anyMatch(user -> user.getUsername().equals(username));
     }
 
-    public static void saveUserToStorage() {
-        try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("UsersStorage.ser"));
-
-            objectOutputStream.writeObject(UsersManager.getUsersList());
-            objectOutputStream.close();
-
-        } catch (IOException e) {
-            System.out.println(e);
-            System.out.println("Error, user hasn`t been added to storage.");
-        }
-    }
-
-    public static void loadUsersFromStorage() {
-        try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("UsersStorage.ser"));
-
-            LinkedList<User> usersFromStorage = (LinkedList<User>) objectInputStream.readObject();
-
-            UsersManager.getUsersList().addAll(usersFromStorage.stream().toList());
-
-        } catch (IOException e) {
-            System.out.println(e);
-            System.out.println("loadUsersFromStorage — IOException error.");
-        } catch (Exception e) {
-            System.out.println(e);
-            System.out.println("loadUsersFromStorage — Exception error.");
-        }
-    }
-
-    private UsersManager() {
+    public UsersManager() {
     }
 }

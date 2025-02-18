@@ -61,12 +61,13 @@ public class Book implements Serializable {
 
     @Override
     public String toString() {
-        return "Book: " +
-                "title: '" + title + '\'' +
-                " || Author Name: '" + authorName + '\'' +
-                " || Genre: " + genre + '\'' +
-                " || Publishing Year: " + publishingYear +
-                " || Finished Reading: " + finishedReading + "\n";
+        return "Book{" +
+                "title='" + title + '\'' +
+                ", authorName='" + authorName + '\'' +
+                ", genre='" + genre + '\'' +
+                ", publishingYear=" + publishingYear +
+                ", finishedReading=" + finishedReading +
+                '}';
     }
 
     @Override

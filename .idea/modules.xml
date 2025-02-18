@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Library-App-Java-Core.iml" filepath="$PROJECT_DIR$/Library-App-Java-Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cli-library-app-java.iml" filepath="$PROJECT_DIR$/cli-library-app-java.iml" />
     </modules>
   </component>
 </project>
